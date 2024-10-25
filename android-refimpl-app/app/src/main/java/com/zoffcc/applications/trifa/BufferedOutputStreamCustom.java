@@ -30,14 +30,15 @@ public class BufferedOutputStreamCustom extends info.guardianproject.iocipher.Fi
     protected byte[] buf;
     protected int count;
     protected long cur_pos;
-    final protected int PAGE_SIZE = 8192 * 20; // in bytes (must be a multiple of 8192)
+    final protected int PAGE_SIZE = 8192; // must be 8192
+    final protected int cache_buffer_size = PAGE_SIZE * 15; // in bytes (must be a multiple of 8192)
 
     public BufferedOutputStreamCustom(String path) throws FileNotFoundException
     {
         super(path);
         count = 0;
         cur_pos = 0;
-        buf = new byte[PAGE_SIZE];
+        buf = new byte[cache_buffer_size];
         // Log.i("BufOutStream:new", "buf=" + buf);
     }
 
@@ -102,7 +103,7 @@ public class BufferedOutputStreamCustom extends info.guardianproject.iocipher.Fi
             super.flush();
             count = 0;
             cur_pos = 0;
-            buf = new byte[8192];
+            buf = new byte[cache_buffer_size];
             super.getChannel().lseek(seek_position, info.guardianproject.libcore.io.OsConstants.SEEK_SET);
             // Log.i("BufOutStream:seek:22:", "buf=" + buf + " cur_pos=" + cur_pos + " seek_position=" + seek_position);
         }
