@@ -3445,6 +3445,10 @@ public class MainActivity extends AppCompatActivity
 
     public static native int tox_group_mod_set_role(long group_number, long peer_id, int a_Tox_Group_Role);
 
+    public static native int tox_group_founder_set_voice_state(long group_number, int a_Tox_Group_Voice_State);
+
+    public static native int tox_group_get_voice_state(long group_number);
+
     public static native String tox_group_peer_get_public_key(long group_number, long peer_id);
 
     public static native String tox_group_savedpeer_get_public_key(long group_number, long slot_num);

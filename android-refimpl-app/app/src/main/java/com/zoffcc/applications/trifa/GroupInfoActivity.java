@@ -25,6 +25,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -36,19 +38,27 @@ import java.util.List;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatSpinner;
 import androidx.appcompat.widget.Toolbar;
 
 import static com.zoffcc.applications.trifa.CameraWrapper.YUV420rotate90;
 import static com.zoffcc.applications.trifa.HelperGeneric.display_toast;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.get_group_peernum_from_peer_pubkey;
 import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_groupmessagelist;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_peer_in_db;
 import static com.zoffcc.applications.trifa.MainActivity.SD_CARD_ENC_FILES_EXPORT_DIR;
 import static com.zoffcc.applications.trifa.MainActivity.context_s;
 import static com.zoffcc.applications.trifa.MainActivity.main_handler_s;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_founder_set_peer_limit;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_founder_set_voice_state;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_peer_limit;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_voice_state;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_is_connected;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_mod_set_role;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_offline_peer_count;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_peer_count;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_peer_get_name;
@@ -79,6 +89,9 @@ public class GroupInfoActivity extends AppCompatActivity
     Button group_reconnect_button = null;
     Button group_dumpofflinepeers_button = null;
     Button group_del_sysmsgs_button = null;
+    AppCompatSpinner group_voicestate_select = null;
+    private AppCompatButton group_voicestate_set_button = null;
+    private String[] tox_ngc_group_voicestate_items;
     String group_id = "-1";
 
     @Override
@@ -103,6 +116,93 @@ public class GroupInfoActivity extends AppCompatActivity
         group_reconnect_button = (Button) findViewById(R.id.group_reconnect_button);
         group_dumpofflinepeers_button = (Button) findViewById(R.id.group_dumpofflinepeers_button);
         group_del_sysmsgs_button = (Button) findViewById(R.id.group_del_sysmsgs_button);
+        group_voicestate_select = findViewById(R.id.group_voicestate_select);
+        group_voicestate_set_button = findViewById(R.id.group_voicestate_set_button);
+
+        this.tox_ngc_group_voicestate_items = new String[]{"---", "FOUNDER", "MODERATOR", "ALL"};
+        ArrayAdapter<CharSequence> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
+                                                                tox_ngc_group_voicestate_items);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        group_voicestate_select.setAdapter(adapter);
+
+        int current_voicestate = 0;
+        try
+        {
+            current_voicestate = tox_group_get_voice_state(tox_group_by_groupid__wrapper(group_id));
+            Log.i(TAG, "current_voicestate:" + current_voicestate);
+            if (current_voicestate == ToxVars.Tox_Group_Voice_State.TOX_GROUP_VOICE_STATE_FOUNDER.value)
+            {
+                group_voicestate_select.setSelection(1);
+            }
+            else if (current_voicestate == ToxVars.Tox_Group_Voice_State.TOX_GROUP_VOICE_STATE_MODERATOR.value)
+            {
+                group_voicestate_select.setSelection(2);
+            }
+            else if (current_voicestate == ToxVars.Tox_Group_Voice_State.TOX_GROUP_VOICE_STATE_ALL.value)
+            {
+                group_voicestate_select.setSelection(3);
+            }
+            else
+            {
+                // nothing valid selected
+                group_voicestate_select.setSelection(0);
+            }
+        }
+        catch(Exception e)
+        {
+        }
+
+        group_voicestate_select.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                Log.i(TAG, "selected_new_voicestate:" + parent.getItemAtPosition(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+
+            }
+        });
+
+        group_voicestate_set_button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                try
+                {
+                    String role_str = (String) group_voicestate_select.getSelectedItem();
+                    int new_role = ToxVars.Tox_Group_Voice_State.TOX_GROUP_VOICE_STATE_ALL.value;
+                    if (role_str.equals("FOUNDER"))
+                    {
+                        new_role = ToxVars.Tox_Group_Voice_State.TOX_GROUP_VOICE_STATE_FOUNDER.value;
+                    }
+                    else if (role_str.equals("MODERATOR"))
+                    {
+                        new_role = ToxVars.Tox_Group_Voice_State.TOX_GROUP_VOICE_STATE_MODERATOR.value;
+                    }
+                    else if (role_str.equals("ALL"))
+                    {
+                        new_role = ToxVars.Tox_Group_Voice_State.TOX_GROUP_VOICE_STATE_ALL.value;
+                    }
+                    else
+                    {
+                        // nothing valid selected
+                        return;
+                    }
+
+                    int result = tox_group_founder_set_voice_state(tox_group_by_groupid__wrapper(group_id), new_role);
+                    Log.i(TAG, "setting new voicestate to: " + new_role + " result=" + result);
+                    update_savedata_file_wrapper();
+                }
+                catch (Exception ignored)
+                {
+                }
+            }
+        });
 
         try
         {
