@@ -541,13 +541,12 @@ void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 
 
 
+            int16_t *this_buffer_pcm16 = (int16_t *) audio_rec_buffer[rec_buf_pointer_start];
+            int this_buffer_size_pcm16 = audio_rec_buffer_size[rec_buf_pointer_start] / 2;
 
 
             if (gainprocessing_active == 1)
             {
-
-                int16_t *this_buffer_pcm16 = (int16_t *) audio_rec_buffer[rec_buf_pointer_start];
-                int this_buffer_size_pcm16 = audio_rec_buffer_size[rec_buf_pointer_start] / 2;
 
 #if 1
                 // TODO: make this better? faster?
