@@ -103,6 +103,7 @@ int16_t *pcm_buf_out_resampled;
 
 int aec_active = 0;
 int gainprocessing_active = 0;
+int rnnoise_active = 0;
 int audio_aec_delay = 80;
 
 /*---------------------------------------------------------------------------*/
@@ -499,46 +500,47 @@ void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 
 
 
-
-
-
-            // RNNoise - Noise Reduction -----------
-
-            // uint64_t rn_t1 = current_time_monotonic_default();
-            int samples_count_rnnoise = audio_rec_buffer_size[rec_buf_pointer_start] / 2;
-#define RNNOISE_FRAME_SIZE 480
-            // __android_log_print(ANDROID_LOG_INFO, LOGTAG, "RNNoise:samples_count_rnnoise=%d", (int)samples_count_rnnoise);
-            if (samples_count_rnnoise == (RNNOISE_FRAME_SIZE) * 4)
+            if (rnnoise_active == 1)
             {
-                float x[RNNOISE_FRAME_SIZE];
-                int16_t *input_rnnoise = (int16_t *) audio_rec_buffer[rec_buf_pointer_start];
 
-                // first 480 samples
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i];
-                rnnoise_process_frame(RNNoise_sts, x, x);
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i] = x[i];
 
-                // second 480 samples
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i + (RNNOISE_FRAME_SIZE)];
-                rnnoise_process_frame(RNNoise_sts, x, x);
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i + (RNNOISE_FRAME_SIZE)] = x[i];
+                // RNNoise - Noise Reduction -----------
 
-                // third 480 samples
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i + (2 * RNNOISE_FRAME_SIZE)];
-                rnnoise_process_frame(RNNoise_sts, x, x);
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i + (2 * RNNOISE_FRAME_SIZE)] = x[i];
+                // uint64_t rn_t1 = current_time_monotonic_default();
+                int samples_count_rnnoise = audio_rec_buffer_size[rec_buf_pointer_start] / 2;
+    #define RNNOISE_FRAME_SIZE 480
+                // __android_log_print(ANDROID_LOG_INFO, LOGTAG, "RNNoise:samples_count_rnnoise=%d", (int)samples_count_rnnoise);
+                if (samples_count_rnnoise == (RNNOISE_FRAME_SIZE) * 4)
+                {
+                    float x[RNNOISE_FRAME_SIZE];
+                    int16_t *input_rnnoise = (int16_t *) audio_rec_buffer[rec_buf_pointer_start];
 
-                // fourth 480 samples
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i + (3 * RNNOISE_FRAME_SIZE)];
-                rnnoise_process_frame(RNNoise_sts, x, x);
-                for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i + (3 * RNNOISE_FRAME_SIZE)] = x[i];
+                    // first 480 samples
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i];
+                    rnnoise_process_frame(RNNoise_sts, x, x);
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i] = x[i];
+
+                    // second 480 samples
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i + (RNNOISE_FRAME_SIZE)];
+                    rnnoise_process_frame(RNNoise_sts, x, x);
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i + (RNNOISE_FRAME_SIZE)] = x[i];
+
+                    // third 480 samples
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i + (2 * RNNOISE_FRAME_SIZE)];
+                    rnnoise_process_frame(RNNoise_sts, x, x);
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i + (2 * RNNOISE_FRAME_SIZE)] = x[i];
+
+                    // fourth 480 samples
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) x[i] = input_rnnoise[i + (3 * RNNOISE_FRAME_SIZE)];
+                    rnnoise_process_frame(RNNoise_sts, x, x);
+                    for (int i=0;i<RNNOISE_FRAME_SIZE;i++) input_rnnoise[i + (3 * RNNOISE_FRAME_SIZE)] = x[i];
+                }
+                // uint64_t rn_t2 = current_time_monotonic_default();
+                // __android_log_print(ANDROID_LOG_INFO, LOGTAG, "RNNoise:delta=%d", (int)(rn_t2-rn_t1));
+
+                // RNNoise - Noise Reduction -----------
+
             }
-            // uint64_t rn_t2 = current_time_monotonic_default();
-            // __android_log_print(ANDROID_LOG_INFO, LOGTAG, "RNNoise:delta=%d", (int)(rn_t2-rn_t1));
-
-            // RNNoise - Noise Reduction -----------
-
-
 
 
             int16_t *this_buffer_pcm16 = (int16_t *) audio_rec_buffer[rec_buf_pointer_start];
@@ -1977,6 +1979,14 @@ Java_com_zoffcc_applications_nativeaudio_NativeAudio_set_1gainprocessing_1active
 {
     gainprocessing_active = (int) active;
     __android_log_print(ANDROID_LOG_INFO, LOGTAG, "set_gainprocessing_active:gainprocessing_active=%d", gainprocessing_active);
+}
+
+void
+Java_com_zoffcc_applications_nativeaudio_NativeAudio_set_1rnnoise_1active(JNIEnv *env, jclass clazz,
+                                                                      jint active)
+{
+    rnnoise_active = (int) active;
+    __android_log_print(ANDROID_LOG_INFO, LOGTAG, "set_rnnoise_active:rnnoise_active=%d", rnnoise_active);
 }
 
 jint

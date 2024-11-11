@@ -208,6 +208,8 @@ public class NativeAudio
 
     public static native void set_gainprocessing_active(int active);
 
+    public static native void set_rnnoise_active(int active);
+
     public static native void set_rec_preset(boolean with_loud_speaker);
 
     public static native int get_aec_active();
