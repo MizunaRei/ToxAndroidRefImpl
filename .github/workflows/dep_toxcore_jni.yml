@@ -50,3 +50,9 @@ jobs:
         branch: create-pull-request/toxcorejni
         delete-branch: true
         title: ${{ steps.titletext_str.outputs.titletext }}
+        body: |
+          - Dependency updates
+
+          https://github.com/zoff99/ToxAndroidRefImpl/tree/zoff99/maven_artefact
+
+          have a look at the maven_artefact branch to see the latest changes.

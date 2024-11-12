@@ -45,3 +45,9 @@ jobs:
         branch: create-pull-request/iocipher
         delete-branch: true
         title: ${{ steps.titletext_str.outputs.titletext }}
+        body: |
+          - Dependency updates
+
+          https://github.com/zoff99/iocipher_pack/
+
+          have a look at the iocipher_pack repository for all changes.
