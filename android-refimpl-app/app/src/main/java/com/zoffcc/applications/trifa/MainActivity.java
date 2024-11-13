@@ -3411,6 +3411,8 @@ public class MainActivity extends AppCompatActivity
 
     public static native int tox_group_leave(long group_number, String part_message);
 
+    public static native int tox_group_disconnect(long group_number);
+
     public static native long tox_group_self_get_peer_id(long group_number);
 
     public static native int tox_group_self_set_name(long group_number, @NonNull String my_peer_name);
