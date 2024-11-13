@@ -54,6 +54,7 @@ import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wr
 import static com.zoffcc.applications.trifa.MainActivity.PREF__dark_mode_pref;
 import static com.zoffcc.applications.trifa.MainActivity.context_s;
 import static com.zoffcc.applications.trifa.MainActivity.main_handler_s;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_disconnect;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_is_connected;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_leave;
@@ -355,7 +356,7 @@ public class GroupListHolder extends RecyclerView.ViewHolder implements View.OnC
                         break;
                     case R.id.item_leave:
                         // leave group -----------------
-                        // TODO: write me
+                        show_confirm_group_leave_dialog(v, f2);
                         // leave group -----------------
                         break;
                     case R.id.item_dummy01:
@@ -375,6 +376,65 @@ public class GroupListHolder extends RecyclerView.ViewHolder implements View.OnC
 
         return true;
 
+    }
+
+    public void show_confirm_group_leave_dialog(final View view, final GroupDB f2)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+        builder.setTitle("Leave Group?");
+        builder.setMessage("Do you want to leave this Group?");
+
+        builder.setNegativeButton("Cancel", null);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                if (f2.group_identifier != null)
+                {
+                    final long group_num = tox_group_by_groupid__wrapper(f2.group_identifier);
+                    tox_group_disconnect(group_num);
+                    update_savedata_file_wrapper(); // after leaving a conference
+                }
+
+                Runnable myRunnable2 = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try
+                        {
+                            try
+                            {
+                                if (MainActivity.friend_list_fragment != null)
+                                {
+                                    // reload friendlist
+                                    MainActivity.friend_list_fragment.add_all_friends_clear(0);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                            Log.i(TAG, "onMenuItemClick:8:EE:" + e.getMessage());
+                        }
+                    }
+                };
+
+                // TODO: use own handler
+                if (main_handler_s != null)
+                {
+                    main_handler_s.post(myRunnable2);
+                }
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     public void show_confirm_group_del_dialog(final View view, final GroupDB f2)
