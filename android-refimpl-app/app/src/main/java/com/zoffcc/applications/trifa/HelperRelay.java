@@ -35,6 +35,7 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_conference_invite;
 import static com.zoffcc.applications.trifa.MainActivity.tox_friend_send_lossless_packet;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_invite_friend;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_FRIEND_PUBKEY_FOR_PROXY;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_GROUP_ID_FOR_PROXY;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_NOTIFICATION_TOKEN;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_FCM_PUSH_URL_PREFIX;
@@ -42,6 +43,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_FCM_PUSH_U
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_NTFY_PUSH_URL_PREFIX;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_TOKEN_DB_KEY;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_UP_PUSH_URL_PREFIX;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_GROUP_CHAT_ID_SIZE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
@@ -261,6 +263,11 @@ public class HelperRelay
                         int res = tox_group_invite_friend(group_num,
                                                           tox_friend_by_public_key__wrapper(relay_public_key_string));
                         update_savedata_file_wrapper();
+
+                        byte[] data = HelperGeneric.hex_to_bytes("FF" + conf.group_identifier);
+                        data[0] = (byte) CONTROL_PROXY_MESSAGE_TYPE_GROUP_ID_FOR_PROXY.value;
+                        tox_friend_send_lossless_packet(tox_friend_by_public_key__wrapper(relay_public_key_string),
+                                                        data, TOX_GROUP_CHAT_ID_SIZE + 1);
                     }
                 }
             }
