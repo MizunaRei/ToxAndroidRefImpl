@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Process;
@@ -44,6 +45,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import androidx.core.app.ServiceCompat;
 import info.guardianproject.iocipher.VirtualFileSystem;
 
 import static com.zoffcc.applications.nativeaudio.NativeAudio.set_aec_active;
@@ -1874,7 +1876,15 @@ public class TrifaToxService extends Service
     {
         Log.i(TAG, "start_me");
         notification2 = tox_notification_setup(this, nmn2);
-        startForeground(HelperToxNotification.ONGOING_NOTIFICATION_ID, notification2);
+        int type = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        {
+            type = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
+        }
+        ServiceCompat.startForeground(this,
+                                      HelperToxNotification.ONGOING_NOTIFICATION_ID,
+                                      notification2,
+                                      type);
     }
 
     static void bootstap_from_custom_nodes()

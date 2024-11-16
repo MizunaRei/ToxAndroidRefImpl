@@ -341,19 +341,31 @@
         <service
             android:name=".ConfGroupAudioService"
             android:enabled="true"
+            android:foregroundServiceType="specialUse"
             android:exported="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="watchdog service" />
         </service>
 
         <service
             android:name=".GroupGroupAudioService"
             android:enabled="true"
+            android:foregroundServiceType="specialUse"
             android:exported="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="watchdog service" />
         </service>
 
         <service
             android:name=".CallAudioService"
             android:enabled="true"
+            android:foregroundServiceType="specialUse"
             android:exported="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="watchdog service" />
         </service>
 
         <receiver android:name=".ConfGroupAudioService$ButtonReceiver" android:enabled="true">

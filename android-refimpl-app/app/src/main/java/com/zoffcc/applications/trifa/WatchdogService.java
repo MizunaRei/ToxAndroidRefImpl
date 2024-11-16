@@ -83,7 +83,8 @@ public class WatchdogService extends Service
         try {
             Notification notification = new NotificationCompat.Builder(this, channelId_toxservice).build();
             int type = 0;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            {
                 type = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
             }
             ServiceCompat.startForeground(this,

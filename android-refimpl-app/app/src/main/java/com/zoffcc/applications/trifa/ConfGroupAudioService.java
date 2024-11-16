@@ -27,10 +27,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
@@ -41,6 +43,7 @@ import com.mikepenz.iconics.IconicsDrawable;
 import com.zoffcc.applications.nativeaudio.NativeAudio;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
 
 import static com.zoffcc.applications.trifa.CallingActivity.audio_receiver_thread;
 import static com.zoffcc.applications.trifa.CallingActivity.audio_thread;
@@ -130,7 +133,15 @@ public class ConfGroupAudioService extends Service
 
         nm3 = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         noti_and_builder = buildNotification(global_gas_status);
-        startForeground(ONGOING_GROUP_AUDIO_NOTIFICATION_ID, noti_and_builder.n);
+        int type = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        {
+            type = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
+        }
+        ServiceCompat.startForeground(this,
+                                      ONGOING_GROUP_AUDIO_NOTIFICATION_ID,
+                                      noti_and_builder.n,
+                                      type);
 
         Log.i(TAG, "onCreate:thread:1");
 

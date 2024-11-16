@@ -27,10 +27,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
@@ -41,6 +43,7 @@ import com.mikepenz.iconics.IconicsDrawable;
 import com.zoffcc.applications.nativeaudio.NativeAudio;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
 
 import static com.zoffcc.applications.nativeaudio.NativeAudio.n_audio_in_buffer_max_count;
 import static com.zoffcc.applications.trifa.CallingActivity.audio_receiver_thread;
@@ -53,6 +56,7 @@ import static com.zoffcc.applications.trifa.HelperGeneric.drawableToBitmap;
 import static com.zoffcc.applications.trifa.HelperGeneric.reset_audio_mode;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_audio_to_headset;
 import static com.zoffcc.applications.trifa.HelperGeneric.stop_ngc_audio_system;
+import static com.zoffcc.applications.trifa.MainActivity.WATCHDOG_NOTIFICATION_ID;
 
 public class GroupGroupAudioService extends Service
 {
@@ -114,7 +118,15 @@ public class GroupGroupAudioService extends Service
 
         ngc_nm3 = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         ngc_noti_and_builder = buildNotification(global_ngc_gas_status);
-        startForeground(ONGOING_NGC_AUDIO_NOTIFICATION_ID, ngc_noti_and_builder.n);
+        int type = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        {
+            type = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
+        }
+        ServiceCompat.startForeground(this,
+                                      ONGOING_NGC_AUDIO_NOTIFICATION_ID,
+                                      ngc_noti_and_builder.n,
+                                      type);
 
         Log.i(TAG, "onCreate:thread:1");
 
