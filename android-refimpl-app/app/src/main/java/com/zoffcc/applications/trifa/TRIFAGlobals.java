@@ -79,6 +79,7 @@ public class TRIFAGlobals
     public static final int MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION = 4;
 
     public static final int TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES = 25;
+    public static final int TOX_NGC_HISTORY_SYNC_MAX_FILENAME_BYTES = 255;
     public static final int TOX_NGC_HISTORY_SYNC_MAX_SECONDS_BACK = 130 * 60; // 130 minutes
 
     public static final long NGC_NEW_PEERS_TIMEDELTA_IN_MS = (2 * 3600) * 1000; // 2hrs in millis

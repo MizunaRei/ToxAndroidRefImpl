@@ -61,6 +61,7 @@ import static com.zoffcc.applications.trifa.HelperGeneric.dp2px;
 import static com.zoffcc.applications.trifa.HelperGeneric.fourbytes_of_long_to_hex;
 import static com.zoffcc.applications.trifa.HelperGeneric.io_file_copy;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.utf8_string_from_bytes_with_padding;
 import static com.zoffcc.applications.trifa.HelperMsgNotification.change_msg_notification;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__conference_show_system_messages;
 import static com.zoffcc.applications.trifa.MainActivity.android_tox_callback_conference_title_cb_method;
@@ -86,6 +87,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.GROUP_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_GROUP_HISTORY_SYNC_DOUBLE_INTERVAL_SECS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_EDIT_ACTION.NOTIFICATION_EDIT_ACTION_ADD;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TOX_NGC_HISTORY_SYNC_MAX_FILENAME_BYTES;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TOX_NGC_HISTORY_SYNC_MAX_SECONDS_BACK;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
@@ -1240,6 +1242,10 @@ public class HelperGroup
             // fill with null bytes up to 255 for the filename
             data_buf.put((byte) 0x0);
         }
+
+
+
+
         // -- now fill the data from file --
         java.io.File img_file = new java.io.File(g.filename_fullpath);
 
@@ -1563,46 +1569,15 @@ public class HelperGroup
             // TODO: fix me!
             long timestamp = ((byte)data[8+32]<<3) + ((byte)data[8+32+1]<<2) + ((byte)data[8+32+2]<<1) + (byte)data[8+32+3];
 
-            ByteBuffer filename_bytes = ByteBuffer.allocateDirect(TOX_MAX_FILENAME_LENGTH);
-            filename_bytes.put(data, 8 + 32 + 4, 255);
-            filename_bytes.rewind();
             String filename = "image.jpg";
             try
             {
-                byte[] filename_byte_buf = new byte[255];
-                Arrays.fill(filename_byte_buf, (byte)0x0);
-                filename_bytes.rewind();
-                filename_bytes.get(filename_byte_buf);
-
-                int start_index = 0;
-                int end_index = 254;
-                for(int j=0;j<255;j++)
-                {
-                    if (filename_byte_buf[j] == 0)
-                    {
-                        start_index = j+1;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                for(int j=254;j>=0;j--)
-                {
-                    if (filename_byte_buf[j] == 0)
-                    {
-                        end_index = j;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                byte[] filename_byte_buf_stripped = Arrays.copyOfRange(filename_byte_buf,start_index,end_index);
-                filename = new String(filename_byte_buf_stripped, StandardCharsets.UTF_8);
-                //Log.i(TAG,"group_custom_packet_cb:filename str=" + filename);
+                ByteBuffer filename_bytes = ByteBuffer.allocateDirect(TOX_MAX_FILENAME_LENGTH);
+                filename_bytes.put(data, 8 + 32 + 4, TOX_MAX_FILENAME_LENGTH);
+                filename = utf8_string_from_bytes_with_padding(filename_bytes,
+                                                               TOX_MAX_FILENAME_LENGTH,
+                                                               "image.jpg");
+                Log.i(TAG,"group_custom_packet_cb:filename str=" + filename);
 
                 //Log.i(TAG, "group_custom_packet_cb:filename:"+filename_bytes.arrayOffset()+" "
                 //+filename_bytes.limit()+" "+filename_bytes.array().length);
@@ -2103,7 +2078,19 @@ public class HelperGroup
             }
             catch(Exception e)
             {
+                e.printStackTrace();
             }
+
+            try
+            {
+                Log.i(TAG,"send_ngch_syncmsg:send_ts_bytes:filename_bytes=" +
+                      HelperGeneric.bytesToHex(filename_bytes, 0, filename_bytes.length));
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+
             data_buf.put(filename_bytes);
             for (int k=0;k<(TOX_MAX_FILENAME_LENGTH - filename_bytes.length);k++)
             {
@@ -2229,46 +2216,17 @@ public class HelperGroup
             // Log.i(TAG, "handle_incoming_sync_group_message:message_id_tox hex=" + message_id_tox);
             //
             //
-            ByteBuffer name_buffer = ByteBuffer.allocateDirect(TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
-            name_buffer.put(data, 8 + 4 + 32 + 4, TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
-            name_buffer.rewind();
-            String peer_name = "peer";
+
             try
             {
-                byte[] name_byte_buf = new byte[TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES];
-                Arrays.fill(name_byte_buf, (byte)0x0);
-                name_buffer.rewind();
-                name_buffer.get(name_byte_buf);
+                ByteBuffer name_buffer = ByteBuffer.allocateDirect(TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
+                name_buffer.put(data, 8 + 4 + 32 + 4, TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
+                String peer_name = utf8_string_from_bytes_with_padding(name_buffer,
+                                                                             TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES,
+                                                                             "peer");
+                Log.i(TAG,"handle_incoming_sync_group_message:peer_name str=" + peer_name);
 
-                int start_index = 0;
-                int end_index = TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES - 1;
-                for(int j=0;j<TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES;j++)
-                {
-                    if (name_byte_buf[j] == 0)
-                    {
-                        start_index = j+1;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
 
-                for(int j=(TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES-1);j>=0;j--)
-                {
-                    if (name_byte_buf[j] == 0)
-                    {
-                        end_index = j;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                byte[] peername_byte_buf_stripped = Arrays.copyOfRange(name_byte_buf, start_index,end_index);
-                peer_name = new String(peername_byte_buf_stripped, StandardCharsets.UTF_8);
-                // Log.i(TAG,"handle_incoming_sync_group_message:peer_name str=" + peer_name);
                 //
                 final int header = 6+1+1+4+32+4+25; // 73 bytes
                 long text_size = length - header;
@@ -2471,51 +2429,23 @@ public class HelperGroup
             // Log.i(TAG, "handle_incoming_sync_group_file:message_id_hash hex=" + message_id_hash);
             //
             //
-            ByteBuffer name_buffer = ByteBuffer.allocateDirect(TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
-            name_buffer.put(data, 8 + 32 + 32 + 4, TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
-            name_buffer.rewind();
-            String peer_name = "peer";
             try
             {
-                byte[] name_byte_buf = new byte[TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES];
-                Arrays.fill(name_byte_buf, (byte)0x0);
-                name_buffer.rewind();
-                name_buffer.get(name_byte_buf);
-
-                int start_index = 0;
-                int end_index = TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES - 1;
-                for(int j=0;j<TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES;j++)
-                {
-                    if (name_byte_buf[j] == 0)
-                    {
-                        start_index = j+1;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                for(int j=(TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES-1);j>=0;j--)
-                {
-                    if (name_byte_buf[j] == 0)
-                    {
-                        end_index = j;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                byte[] peername_byte_buf_stripped = Arrays.copyOfRange(name_byte_buf, start_index,end_index);
-                peer_name = new String(peername_byte_buf_stripped, StandardCharsets.UTF_8);
-                // Log.i(TAG,"handle_incoming_sync_group_file:peer_name str=" + peer_name);
+                ByteBuffer name_buffer = ByteBuffer.allocateDirect(TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
+                name_buffer.put(data, 8 + 32 + 32 + 4, TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES);
+                final String peer_name = utf8_string_from_bytes_with_padding(name_buffer,
+                                                                             TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES,
+                                                                             "peer");
+                Log.i(TAG,"handle_incoming_sync_group_file:peer_name str=" + peer_name);
                 //
                 //
                 //
-                // TODO: fixme, get real filename
-                final String filename = "image.jpg";
+                ByteBuffer filename_buffer = ByteBuffer.allocateDirect(TOX_NGC_HISTORY_SYNC_MAX_FILENAME_BYTES);
+                filename_buffer.put(data, 6 + 1 + 1 + 32 + 32 + 4 + 25, TOX_NGC_HISTORY_SYNC_MAX_FILENAME_BYTES);
+                final String filename = utf8_string_from_bytes_with_padding(filename_buffer,
+                                                                            TOX_NGC_HISTORY_SYNC_MAX_FILENAME_BYTES,
+                                                                            "image.jpg");
+                Log.i(TAG, "handle_incoming_sync_group_file:filename=" + filename);
                 //
                 //
                 //
@@ -2523,7 +2453,7 @@ public class HelperGroup
                 long filedata_size = length - header;
                 if ((filedata_size < 1) || (filedata_size > 37000))
                 {
-                    // Log.i(TAG, "handle_incoming_sync_group_file: file size less than 1 byte or larger than 37000 bytes");
+                    Log.i(TAG, "handle_incoming_sync_group_file: file size less than 1 byte or larger than 37000 bytes");
                     return;
                 }
 

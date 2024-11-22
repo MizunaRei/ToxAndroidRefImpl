@@ -126,6 +126,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_AVATAR_HEIGHT_N
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_V2_MSG_SENT_OK;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_EDIT_ACTION.NOTIFICATION_EDIT_ACTION_ADD;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.SECONDS_TO_STAY_ONLINE_IN_BATTERY_SAVINGS_MODE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TOX_NGC_HISTORY_SYNC_MAX_PEERNAME_BYTES;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYNC_TYPE.TRIFA_SYNC_TYPE_NGC_PEERS;
@@ -1687,6 +1688,53 @@ public class HelperGeneric
         }
 
         return res;
+    }
+
+    public static String utf8_string_from_bytes_with_padding(final ByteBuffer buf, final int max_bytes_output,
+                                                             final String default_str)
+    {
+        String ret = default_str;
+        try
+        {
+            byte[] byte_buf = new byte[max_bytes_output];
+            Arrays.fill(byte_buf, (byte)0x0);
+            buf.rewind();
+            buf.get(byte_buf);
+
+            int start_index = 0;
+            int end_index = max_bytes_output - 1;
+            for(int j=0;j<max_bytes_output;j++)
+            {
+                if (byte_buf[j] == 0)
+                {
+                    start_index = j+1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            for(int j=(max_bytes_output-1);j>=0;j--)
+            {
+                if (byte_buf[j] == 0)
+                {
+                    end_index = j;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            byte[] byte_buf_stripped = Arrays.copyOfRange(byte_buf, start_index,end_index);
+            ret = new String(byte_buf_stripped, StandardCharsets.UTF_8);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return ret;
     }
 
     public static String fourbytes_of_long_to_hex(final long in)
