@@ -63,18 +63,6 @@
     </string-array>
     <string name="pref_title_global_font_size">ಅಕ್ಷರ ಗಾತ್ರ</string>
     <string name="pref_description_global_font_size">Select ಅಕ್ಷರ ಗಾತ್ರ ಆಯ್ಕೆ ಮಾಡಿ</string>
-    <string-array name="pref_global_font_size_titles">
-        <item>ಅತೀ ಸಣ್ಣದು</item>
-        <item>ಸಣ್ಣದು</item>
-        <item>ಸಾಮಾನ್ಯ</item>
-        <item>ದೊಡ್ಡದು</item>
-    </string-array>
-    <string-array name="pref_global_font_size_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
     <string name="pref_title_camera_get_preview_format">ಕ್ಯಾಮೆರಾ ಪೂರ್ವ-ವೀಕ್ಷಣೆ ಸ್ವರೂಪ</string>
     <string name="pref_description_camera_get_preview_format">ಕ್ಯಾಮೆರಾ ಪೂರ್ವವೀಕ್ಷಣೆ ಸ್ವರೂಪ ಕೆಲವು ಫೋನ್‌ಗಳಲ್ಲಿ ತಪ್ಪಾದ ಸ್ವರೂಪದಲ್ಲಿದೆ ಎಂದು ತೋರುತ್ತದೆ</string>
     <string-array name="pref_camera_get_preview_format_titles">

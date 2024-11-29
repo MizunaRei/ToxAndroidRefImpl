@@ -63,18 +63,6 @@
     </string-array>
     <string name="pref_title_global_font_size">字体大小</string>
     <string name="pref_description_global_font_size">选择字体大小</string>
-    <string-array name="pref_global_font_size_titles">
-        <item>很小</item>
-        <item>小</item>
-        <item>默认：正常</item>
-        <item>大</item>
-    </string-array>
-    <string-array name="pref_global_font_size_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
     <string name="pref_title_camera_get_preview_format">相机预览格式</string>
     <string name="pref_description_camera_get_preview_format">相机预览格式在某些手机上似乎使用了错误的格式</string>
     <string-array name="pref_camera_get_preview_format_titles">

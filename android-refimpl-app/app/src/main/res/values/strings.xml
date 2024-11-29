@@ -102,12 +102,18 @@
         <item>small</item>
         <item>default: normal</item>
         <item>large</item>
+        <item>larger</item>
+        <item>very large</item>
+        <item>extremly large</item>
     </string-array>
     <string-array name="pref_global_font_size_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
     </string-array>
 
     <string name="pref_title_camera_get_preview_format">Camera Preview Format</string>
