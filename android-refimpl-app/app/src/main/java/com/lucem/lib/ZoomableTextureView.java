@@ -65,7 +65,7 @@ public class ZoomableTextureView extends TextureView
         }
         else
         {
-            minScale = scale;
+            maxScale = scale;
         }
     }
 
