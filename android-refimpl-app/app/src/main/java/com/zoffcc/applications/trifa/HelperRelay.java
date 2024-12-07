@@ -29,6 +29,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_ke
 import static com.zoffcc.applications.trifa.HelperGeneric.del_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.is_group_we_left;
 import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__allow_push_server_ntfy;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_invite;
@@ -259,15 +260,19 @@ public class HelperRelay
                     for (int i = 0; i < c.size(); i++)
                     {
                         GroupDB conf = c.get(i);
-                        final long group_num = tox_group_by_groupid__wrapper(conf.group_identifier);
-                        int res = tox_group_invite_friend(group_num,
-                                                          tox_friend_by_public_key__wrapper(relay_public_key_string));
-                        update_savedata_file_wrapper();
+                        if (!is_group_we_left(conf.group_identifier))
+                        {
+                            // only send group to relay, if we have NOT left it
+                            final long group_num = tox_group_by_groupid__wrapper(conf.group_identifier);
+                            int res = tox_group_invite_friend(group_num,
+                                                              tox_friend_by_public_key__wrapper(relay_public_key_string));
+                            update_savedata_file_wrapper();
 
-                        byte[] data = HelperGeneric.hex_to_bytes("FF" + conf.group_identifier);
-                        data[0] = (byte) CONTROL_PROXY_MESSAGE_TYPE_GROUP_ID_FOR_PROXY.value;
-                        tox_friend_send_lossless_packet(tox_friend_by_public_key__wrapper(relay_public_key_string),
-                                                        data, TOX_GROUP_CHAT_ID_SIZE + 1);
+                            byte[] data = HelperGeneric.hex_to_bytes("FF" + conf.group_identifier);
+                            data[0] = (byte) CONTROL_PROXY_MESSAGE_TYPE_GROUP_ID_FOR_PROXY.value;
+                            tox_friend_send_lossless_packet(tox_friend_by_public_key__wrapper(relay_public_key_string),
+                                                            data, TOX_GROUP_CHAT_ID_SIZE + 1);
+                        }
                     }
                 }
             }

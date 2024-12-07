@@ -482,6 +482,53 @@ public class HelperGroup
         return result;
     }
 
+    static boolean is_group_we_left(String group_identifier)
+    {
+        try
+        {
+            return (orma.selectFromGroupDB().
+                    group_identifierEq(group_identifier.toLowerCase()).
+                    toList().get(0).group_we_left);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    static void set_group_group_we_left(String group_identifier)
+    {
+        try
+        {
+            orma.updateGroupDB().
+                    group_identifierEq(group_identifier.toLowerCase()).
+                    group_we_left(true).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_group_group_we_left:EE:" + e.getMessage());
+        }
+    }
+
+    static void clear_group_group_we_left(String group_identifier)
+    {
+        try
+        {
+            orma.updateGroupDB().
+                    group_identifierEq(group_identifier.toLowerCase()).
+                    group_we_left(false).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+            // Log.i(TAG, "clear_group_group_we_left:EE:" + e.getMessage());
+        }
+    }
+
     static boolean is_group_active(String group_identifier)
     {
         try

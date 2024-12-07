@@ -50,6 +50,8 @@ import static com.zoffcc.applications.trifa.HelperGroup.delete_group;
 import static com.zoffcc.applications.trifa.HelperGroup.delete_group_all_files;
 import static com.zoffcc.applications.trifa.HelperGroup.delete_group_all_messages;
 import static com.zoffcc.applications.trifa.HelperGroup.group_identifier_short;
+import static com.zoffcc.applications.trifa.HelperGroup.is_group_we_left;
+import static com.zoffcc.applications.trifa.HelperGroup.set_group_group_we_left;
 import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__dark_mode_pref;
 import static com.zoffcc.applications.trifa.MainActivity.context_s;
@@ -202,20 +204,27 @@ public class GroupListHolder extends RecyclerView.ViewHolder implements View.OnC
 
         try
         {
-            if (fl.group_active)
+            if (is_group_we_left(fl.group_identifier))
             {
-                if (tox_group_is_connected(tox_group_by_groupid__wrapper(fl.group_identifier)) == TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.TOX_GROUP_CONNECTION_STATUS_CONNECTED.value)
-                {
-                    imageView.setImageResource(R.drawable.circle_green);
-                }
-                else
-                {
-                    imageView.setImageResource(R.drawable.circle_orange);
-                }
+                imageView.setImageResource(R.drawable.circle_pink);
             }
             else
             {
-                imageView.setImageResource(R.drawable.circle_red);
+                if (fl.group_active)
+                {
+                    if (tox_group_is_connected(tox_group_by_groupid__wrapper(fl.group_identifier)) == TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.TOX_GROUP_CONNECTION_STATUS_CONNECTED.value)
+                    {
+                        imageView.setImageResource(R.drawable.circle_green);
+                    }
+                    else
+                    {
+                        imageView.setImageResource(R.drawable.circle_orange);
+                    }
+                }
+                else
+                {
+                    imageView.setImageResource(R.drawable.circle_red);
+                }
             }
         }
         catch(Exception ignored)
@@ -395,6 +404,7 @@ public class GroupListHolder extends RecyclerView.ViewHolder implements View.OnC
                     final long group_num = tox_group_by_groupid__wrapper(f2.group_identifier);
                     tox_group_disconnect(group_num);
                     update_savedata_file_wrapper(); // after leaving a conference
+                    set_group_group_we_left(f2.group_identifier);
                 }
 
                 Runnable myRunnable2 = new Runnable()

@@ -45,7 +45,10 @@ import androidx.appcompat.widget.Toolbar;
 import static com.zoffcc.applications.trifa.CameraWrapper.YUV420rotate90;
 import static com.zoffcc.applications.trifa.HelperGeneric.display_toast;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.clear_group_group_we_left;
 import static com.zoffcc.applications.trifa.HelperGroup.get_group_peernum_from_peer_pubkey;
+import static com.zoffcc.applications.trifa.HelperGroup.is_group_we_left;
+import static com.zoffcc.applications.trifa.HelperGroup.set_group_group_we_left;
 import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
 import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_groupmessagelist;
 import static com.zoffcc.applications.trifa.HelperGroup.update_group_peer_in_db;
@@ -309,8 +312,9 @@ public class GroupInfoActivity extends AppCompatActivity
                 try
                 {
                     tox_group_reconnect(group_num_);
-                    group_update_connected_status_on_groupinfo(group_num_);
                     update_savedata_file_wrapper();
+                    clear_group_group_we_left(group_id);
+                    group_update_connected_status_on_groupinfo(group_num_);
                 }
                 catch (Exception e)
                 {
@@ -493,14 +497,22 @@ public class GroupInfoActivity extends AppCompatActivity
         try
         {
             final int is_connected = tox_group_is_connected(group_num);
-            group_connection_status_text.setText(TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.value_str(is_connected));
-            if (is_connected == TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.TOX_GROUP_CONNECTION_STATUS_CONNECTED.value)
+            if (is_group_we_left(group_id))
             {
-                group_reconnect_button.setVisibility(View.GONE);
+                group_connection_status_text.setText("You left the group, but can rejoin it");
+                group_reconnect_button.setVisibility(View.VISIBLE);
             }
             else
             {
-                group_reconnect_button.setVisibility(View.VISIBLE);
+                group_connection_status_text.setText(TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.value_str(is_connected));
+                if (is_connected == TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.TOX_GROUP_CONNECTION_STATUS_CONNECTED.value)
+                {
+                    group_reconnect_button.setVisibility(View.GONE);
+                }
+                else
+                {
+                    group_reconnect_button.setVisibility(View.VISIBLE);
+                }
             }
         }
         catch(Exception ignored)

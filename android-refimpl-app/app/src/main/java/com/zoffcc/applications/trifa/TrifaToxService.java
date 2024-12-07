@@ -940,6 +940,20 @@ public class TrifaToxService extends Service
                 }
                 // ----- convert old NULL's into false -----
 
+                // ----- convert old NULL's into false -----
+                try
+                {
+                    orma.getConnection().execSQL(
+                            "update GroupDB set group_we_left=false" + " where " + " group_we_left is NULL");
+                    Log.i(TAG, "onCreate:migrate_group_we_left");
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    Log.i(TAG, "onCreate:migrate_group_we_left:EE01");
+                }
+                // ----- convert old NULL's into false -----
+
 
                 // ----- convert old NULL's into 0 -----
                 try

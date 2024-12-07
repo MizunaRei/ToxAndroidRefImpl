@@ -137,6 +137,7 @@ import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_w
 import static com.zoffcc.applications.trifa.HelperGroup.get_group_peernum_from_peer_pubkey;
 import static com.zoffcc.applications.trifa.HelperGroup.insert_into_group_message_db;
 import static com.zoffcc.applications.trifa.HelperGroup.is_group_active;
+import static com.zoffcc.applications.trifa.HelperGroup.is_group_we_left;
 import static com.zoffcc.applications.trifa.HelperGroup.ngc_get_index_video_incoming_peer_list;
 import static com.zoffcc.applications.trifa.HelperGroup.ngc_purge_video_incoming_peer_list;
 import static com.zoffcc.applications.trifa.HelperGroup.ngc_set_video_call_icon;
@@ -1919,21 +1920,27 @@ public class GroupMessageListActivity extends AppCompatActivity
             {
                 try
                 {
-                    if (is_group_active(group_id_prev))
+                    if (is_group_we_left(group_id_prev))
                     {
-                        if (tox_group_is_connected(tox_group_by_groupid__wrapper(group_id_prev)) ==
-                            TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.TOX_GROUP_CONNECTION_STATUS_CONNECTED.value)
-                        {
-                            ml_icon.setImageResource(R.drawable.circle_green);
-                        }
-                        else
-                        {
-                            ml_icon.setImageResource(R.drawable.circle_orange);
-                        }
+                        ml_icon.setImageResource(R.drawable.circle_pink);
                     }
                     else
                     {
-                        ml_icon.setImageResource(R.drawable.circle_red);
+                        if (is_group_active(group_id_prev))
+                        {
+                            if (tox_group_is_connected(tox_group_by_groupid__wrapper(group_id_prev)) == TRIFAGlobals.TOX_GROUP_CONNECTION_STATUS.TOX_GROUP_CONNECTION_STATUS_CONNECTED.value)
+                            {
+                                ml_icon.setImageResource(R.drawable.circle_green);
+                            }
+                            else
+                            {
+                                ml_icon.setImageResource(R.drawable.circle_orange);
+                            }
+                        }
+                        else
+                        {
+                            ml_icon.setImageResource(R.drawable.circle_red);
+                        }
                     }
                 }
                 catch (Exception e)

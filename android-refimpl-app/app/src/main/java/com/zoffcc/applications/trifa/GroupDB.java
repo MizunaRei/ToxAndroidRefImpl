@@ -62,6 +62,9 @@ public class GroupDB
     boolean group_active = false; // is this conference active now? are we invited?
 
     @Column(indexed = true, defaultExpr = "false", helpers = Column.Helpers.ALL)
+    boolean group_we_left = false; // did we "leave" keeping our credentials? (we can rejoin)
+
+    @Column(indexed = true, defaultExpr = "false", helpers = Column.Helpers.ALL)
     @Nullable
     boolean notification_silent = false; // show notifications for this conference?
 
@@ -78,6 +81,7 @@ public class GroupDB
         out.tox_group_number = in.tox_group_number;
         out.group_active = in.group_active;
         out.notification_silent = in.notification_silent;
+        out.group_we_left = in.group_we_left;
 
         return out;
     }
@@ -89,6 +93,6 @@ public class GroupDB
                ", who_invited__tox_public_key_string=" + who_invited__tox_public_key_string + ", name=" + name +
                ", topic=" + topic + ", privacy_state=" + privacy_state + ", peer_count=" + peer_count +
                ", own_peer_number=" + own_peer_number + ", notification_silent=" + notification_silent +
-               ", group_active=" + group_active;
+               ", group_active=" + group_active + ", group_we_left=" + group_we_left;
     }
 }
